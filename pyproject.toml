@@ -34,13 +34,13 @@ pytest-cov = "^6.2.1"
 
 [tool.black]
 line-length = 119
-#exclude = git
+#exclude = .git
 
 [tool.isort]
-#line-length = 119
+line-length = 119
 
 [tool.mypy]
 disallow_untyped_defs = true
 warn_return_any = true
-#exclude = venv
+#exclude = .venv
 
