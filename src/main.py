@@ -3,12 +3,14 @@
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')))
 import pandas as pd
 from reports import spending_by_category
+from services import simple_search
+import json
 #
 # # Загружаем тестовый Excel
-df = pd.read_excel(r"C:\Users\alex_\PycharmProjects\ProjectBank\data\operations.xlsx")
-# print(df.head())
-# Вызываем отчёт (без имени файла — создастся автоматически)
-report = spending_by_category(df, "Супермаркеты")
+# df = pd.read_excel(r"C:\Users\alex_\PycharmProjects\ProjectBank\data\operations.xlsx")
+# # print(df.head())
+# # Вызываем отчёт (без имени файла — создастся автоматически)
+# report = spending_by_category(df, "Супермаркеты")
 
 # Если хотите своё имя файла:
 # from reports import save_report
@@ -30,3 +32,20 @@ report = spending_by_category(df, "Супермаркеты")
 #
 # filt = spending_by_category(data, category="Супермаркеты")
 # print(filt)
+
+transactions = [
+    {
+        "Дата операции": "31.12.2021 16:44:00",
+        "Категория": "Супермаркеты",
+        "Описание": "Колхоз",
+        "Сумма операции": -160.89,
+        # остальные поля...
+    },
+    # другие транзакции...
+]
+
+query = "Колхоз"
+
+json_result = simple_search(query, transactions)
+result = json.loads(json_result)
+print(result)
