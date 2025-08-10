@@ -6,7 +6,6 @@ import json
 import pandas as pd
 from unittest.mock import patch, MagicMock
 from views import generate_report
-
 import pytest
 from datetime import datetime
 

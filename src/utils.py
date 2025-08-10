@@ -1,14 +1,14 @@
 import json
 import logging
-import pandas as pd
-from datetime import datetime
 import requests
-from pathlib import Path
+from datetime import datetime
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
-def get_greeting(date_obj: datetime) -> str:
-    hour = date_obj.hour
+def get_greeting(dt: datetime) -> str:
+    hour = dt.hour
+    logger.info(f"Определение приветствия для времени: {hour}:00")
     if 5 <= hour < 12:
         return "Доброе утро"
     elif 12 <= hour < 18:
@@ -18,58 +18,69 @@ def get_greeting(date_obj: datetime) -> str:
     else:
         return "Доброй ночи"
 
-def filter_transactions_by_date(df: pd.DataFrame, date_obj: datetime) -> pd.DataFrame:
-    df['Дата операции'] = pd.to_datetime(df['Дата операции'], format="%d.%m.%Y %H:%M:%S")
-    start_of_month = date_obj.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    return df[(df['Дата операции'] >= start_of_month) & (df['Дата операции'] <= date_obj)]
+def filter_transactions(df: pd.DataFrame, start: datetime, end: datetime) -> pd.DataFrame:
+    logger.info(f"Фильтрация транзакций с {start} по {end}")
+    df["Дата операции"] = pd.to_datetime(df["Дата операции"], format="%d.%m.%Y %H:%M:%S")
+    filtered = df[(df["Дата операции"] >= start) & (df["Дата операции"] <= end)]
+    logger.info(f"Отобрано {len(filtered)} транзакций")
+    return filtered
 
-def get_cards_info(df: pd.DataFrame) -> list:
-    cards_info = []
-    for card_number, group in df.groupby('Номер карты'):
-        if not card_number or not isinstance(card_number, str):
+def summarize_cards(df: pd.DataFrame):
+    logger.info("Суммирование трат по картам")
+    cards_summary = []
+    for card, group in df.groupby("Номер карты"):
+        if not card or not isinstance(card, str):
+            logger.info(f"Пропущена карта: {card}")
             continue
-        last_digits = card_number[-4:]
-        total_spent = group['Сумма операции'].sum()
-        cashback = round(abs(total_spent) * 0.01, 2)  # 1 рубль на 100
-        cards_info.append({
-            "last_digits": last_digits,
-            "total_spent": round(abs(total_spent), 2),
+        total_spent = abs(group["Сумма операции"].astype(str).str.replace(",", ".").astype(float).sum())
+        cashback = round(total_spent / 100, 2)
+        logger.info(f"Карта {card[-4:]}: потрачено {total_spent}, кешбэк {cashback}")
+        cards_summary.append({
+            "last_digits": card[-4:],
+            "total_spent": round(total_spent, 2),
             "cashback": cashback
         })
-    return cards_info
+    return cards_summary
 
-def get_top_transactions(df: pd.DataFrame, n=5) -> list:
-    df_sorted = df.sort_values(by='Сумма платежа', key=abs, ascending=False).head(n)
+def get_top_transactions(df: pd.DataFrame, top_n=5):
+    logger.info(f"Определение топ-{top_n} транзакций по сумме")
+    df["Сумма операции"] = df["Сумма операции"].astype(str).str.replace(",", ".").astype(float)
+    top = df.sort_values(by="Сумма операции", key=abs, ascending=False).head(top_n)
+    logger.info(f"Выбрано {len(top)} транзакций")
     return [
         {
-            "date": row['Дата операции'].strftime("%d.%m.%Y"),
-            "amount": row['Сумма платежа'],
-            "category": row['Категория'],
-            "description": row['Описание']
+            "date": row["Дата операции"].strftime("%d.%m.%Y"),
+            "amount": row["Сумма операции"],
+            "category": row["Категория"],
+            "description": row["Описание"]
         }
-        for _, row in df_sorted.iterrows()
+        for _, row in top.iterrows()
     ]
 
-def get_user_settings(settings_path: str = "user_settings.json") -> dict:
-    with open(settings_path, encoding="utf-8") as f:
-        return json.load(f)
-
-def get_currency_rates(currencies: list) -> list:
-    url = "https://api.exchangerate.host/latest"
-    response = requests.get(url, params={"base": "RUB"})
-    response.raise_for_status()
+def get_currency_rates(currencies):
+    logger.info(f"Получение курсов валют: {currencies}")
+    url = f"https://api.exchangerate.host/latest?base=RUB"
+    response = requests.get(url)
     data = response.json()
-    return [
-        {"currency": cur, "rate": round(1 / data["rates"][cur], 2)}
-        for cur in currencies if cur in data["rates"]
-    ]
+    result = [{"currency": cur, "rate": round(1 / data["rates"][cur], 2)} for cur in currencies]
+    logger.info(f"Курсы валют получены: {result}")
+    return result
 
-def get_stock_prices(stocks: list) -> list:
-    # Для примера — подставные данные, в реальности использовать API Yahoo Finance / Polygon и т.д.
-    return [
-        {"stock": stock, "price": round(100 + i * 50.5, 2)}
-        for i, stock in enumerate(stocks)
-    ]
+def get_stock_prices(stocks):
+    logger.info(f"Получение котировок акций: {stocks}")
+    prices = []
+    for stock in stocks:
+        url = f"https://query1.finance.yahoo.com/v7/finance/quote?symbols={stock}"
+        r = requests.get(url)
+        data = r.json()
+        price = data["quoteResponse"]["result"][0]["regularMarketPrice"]
+        prices.append({"stock": stock, "price": round(price, 2)})
+    logger.info(f"Котировки получены: {prices}")
+    return prices
+
 def load_user_settings(path="user_settings.json"):
+    logger.info(f"Загрузка пользовательских настроек из {path}")
     with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        settings = json.load(f)
+    logger.info(f"Настройки загружены: {settings}")
+    return settings

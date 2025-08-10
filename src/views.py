@@ -10,10 +10,10 @@ import logging
 from datetime import datetime
 from utils import (
     get_greeting,
-    filter_transactions_by_date,
-    get_cards_info,
+    filter_transactions,
+    summarize_cards,
     get_top_transactions,
-    get_user_settings,
+    load_user_settings,
     get_currency_rates,
     get_stock_prices
 )
@@ -25,13 +25,13 @@ def generate_report(date_str: str, df) -> str:
     logger.info("Начало генерации отчета")
 
     date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-    df_filtered = filter_transactions_by_date(df, date_obj)
+    df_filtered = filter_transactions(df, date_obj)
 
     greeting = get_greeting(date_obj)
-    cards_info = get_cards_info(df_filtered)
+    cards_info = summarize_cards(df_filtered)
     top_transactions = get_top_transactions(df_filtered)
 
-    settings = get_user_settings()
+    settings = load_user_settings()
     currency_rates = get_currency_rates(settings["user_currencies"])
     stock_prices = get_stock_prices(settings["user_stocks"])
 
