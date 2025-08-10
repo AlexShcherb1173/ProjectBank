@@ -1,3 +1,5 @@
+# Модуль utils содержит вспомогательные функции для модуля views
+
 import json
 import logging
 import requests
@@ -7,6 +9,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 def get_greeting(dt: datetime) -> str:
+    """Функция - приветствие для пользователя в зависимости от времени суток"""
     hour = dt.hour
     logger.info(f"Определение приветствия для времени: {hour}:00")
     if 5 <= hour < 12:
@@ -19,6 +22,7 @@ def get_greeting(dt: datetime) -> str:
         return "Доброй ночи"
 
 def filter_transactions(df: pd.DataFrame, start: datetime, end: datetime) -> pd.DataFrame:
+    """Функция фильтрации транзакций по картам по датам"""
     logger.info(f"Фильтрация транзакций с {start} по {end}")
     df["Дата операции"] = pd.to_datetime(df["Дата операции"], format="%d.%m.%Y %H:%M:%S")
     filtered = df[(df["Дата операции"] >= start) & (df["Дата операции"] <= end)]
@@ -26,6 +30,7 @@ def filter_transactions(df: pd.DataFrame, start: datetime, end: datetime) -> pd.
     return filtered
 
 def summarize_cards(df: pd.DataFrame):
+    """Функция суммирования трат по картам с формированием отчета"""
     logger.info("Суммирование трат по картам")
     cards_summary = []
     for card, group in df.groupby("Номер карты"):
@@ -43,6 +48,7 @@ def summarize_cards(df: pd.DataFrame):
     return cards_summary
 
 def get_top_transactions(df: pd.DataFrame, top_n=5):
+    """Функция отбора транзакций по убыванию суммы"""
     logger.info(f"Определение топ-{top_n} транзакций по сумме")
     df["Сумма операции"] = df["Сумма операции"].astype(str).str.replace(",", ".").astype(float)
     top = df.sort_values(by="Сумма операции", key=abs, ascending=False).head(top_n)
@@ -58,6 +64,7 @@ def get_top_transactions(df: pd.DataFrame, top_n=5):
     ]
 
 def get_currency_rates(currencies):
+    """Функция получения курса валют"""
     logger.info(f"Получение курсов валют: {currencies}")
     url = f"https://api.exchangerate.host/latest?base=RUB"
     response = requests.get(url)
@@ -67,6 +74,7 @@ def get_currency_rates(currencies):
     return result
 
 def get_stock_prices(stocks):
+    """Функция получения котировок акций"""
     logger.info(f"Получение котировок акций: {stocks}")
     prices = []
     for stock in stocks:
@@ -79,6 +87,7 @@ def get_stock_prices(stocks):
     return prices
 
 def load_user_settings(path="user_settings.json"):
+    """Служебная функция для загрузки из файла пользовательских установок по валютам и акциям"""
     logger.info(f"Загрузка пользовательских настроек из {path}")
     with open(path, "r", encoding="utf-8") as f:
         settings = json.load(f)
