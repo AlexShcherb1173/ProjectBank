@@ -8,7 +8,7 @@ import json
 import logging
 import os
 from datetime import datetime
-
+from typing import Dict, Any
 import pandas as pd
 import requests
 from dotenv import load_dotenv
@@ -47,7 +47,7 @@ def filter_transactions_by_date(df: pd.DataFrame, start_date: datetime, end_date
     return df.loc[mask]
 
 
-def aggregate_cards(df: pd.DataFrame):
+def aggregate_cards(df: pd.DataFrame) -> list[Dict]:
     """Функция суммирования трат и кэшбэка по картам с формированием отчета"""
     cards_info = []
     # Группируем по карте, суммируя и операции, и кэшбэк
@@ -61,7 +61,7 @@ def aggregate_cards(df: pd.DataFrame):
     return cards_info
 
 
-def get_top_transactions(df: pd.DataFrame, top_n: int = 5):
+def get_top_transactions(df: pd.DataFrame, top_n: int = 5) -> list[Dict]:
     """Функция отбора транзакций по убыванию суммы"""
     df_sorted = df.sort_values(by="Сумма операции", key=abs, ascending=False).head(top_n)
     transactions = []
@@ -80,7 +80,8 @@ def get_top_transactions(df: pd.DataFrame, top_n: int = 5):
 def load_user_settings(settings_path: str) -> dict:
     """Служебная функция для загрузки из файла пользовательских установок по валютам и акциям"""
     with open(settings_path, "r", encoding="utf-8") as f:
-        return json.load(f)
+        data: dict[Any, Any] = json.load(f)
+        return data
 
 
 def get_currency_rates(currencies: list) -> list:

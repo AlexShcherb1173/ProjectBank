@@ -1,9 +1,11 @@
-import pandas as pd
-from reports import spending_by_category
-from services import simple_search
-from views import generate_report
-from utils import load_transactions
 import json
+
+import pandas as pd
+
+from src.reports import spending_by_category
+from src.services import simple_search
+from src.utils import load_transactions
+from src.views import generate_report
 
 #
 # # Загружаем тестовый Excel
@@ -13,7 +15,7 @@ df = pd.read_excel(r"C:\Users\alex_\PycharmProjects\ProjectBank\data\operations.
 report = spending_by_category(df, "Супермаркеты")
 
 
-df = load_transactions("../data/operations.xlsx")
+df = load_transactions("data/operations.xlsx")
 transactions = df.to_dict(orient="records")
 query = "Колхоз"
 #

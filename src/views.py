@@ -1,17 +1,20 @@
 # views.py содержит главную функцию generate_report(date_str)
-
 import json
 import os
+import sys
+from typing import cast
 from datetime import datetime
 
 from dotenv import load_dotenv
 
-import utils
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
+import utils #type
 
 load_dotenv()  # загрузить переменные из .env
 
 USER_SETTINGS_FILE = os.getenv("USER_SETTINGS_FILE")
 TRANSACTIONS_FILE = os.getenv("TRANSACTIONS_FILE")
+
 
 def generate_report(date_str: str) -> str:
     """Генерация итогового отчета за выбранный период."""
@@ -23,7 +26,7 @@ def generate_report(date_str: str) -> str:
 
     # Загрузка данных
     df = utils.load_transactions(
-        os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")), TRANSACTIONS_FILE)
+        os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")), cast(str, TRANSACTIONS_FILE))
     )
 
     # Диапазон дат
@@ -39,7 +42,7 @@ def generate_report(date_str: str) -> str:
 
     # Настройки пользователя
     settings = utils.load_user_settings(
-        os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")), USER_SETTINGS_FILE)
+        os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), cast(str, USER_SETTINGS_FILE))
     )
     # Курсы валют
     currency_rates = utils.get_currency_rates(settings["user_currencies"])

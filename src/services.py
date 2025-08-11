@@ -12,7 +12,7 @@
 
 import json
 import logging
-from typing import Dict, List
+from typing import Any, Dict, List
 
 
 def simple_search(query: str, transactions: List[Dict]) -> str:
@@ -28,7 +28,7 @@ def simple_search(query: str, transactions: List[Dict]) -> str:
 
     if not query:
         logging.warning("Пустой поисковый запрос")
-        result = []
+        result: list[Any] = []
     else:
         lower_query = query.lower()
         result = []

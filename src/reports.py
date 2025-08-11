@@ -8,6 +8,7 @@
 import functools
 import logging
 import os
+from typing import Any
 from datetime import datetime, timedelta
 from typing import Callable, Optional
 
@@ -15,15 +16,15 @@ import pandas as pd
 
 
 # ------------------ Декоратор ------------------
-def save_report(filename: Optional[str] = None):
+def save_report(filename: Optional[str] = None) -> Any:
     """
     Декоратор для сохранения результата функции-отчёта в CSV файл.
     :param filename: Имя файла (если None, создаётся автоматически по дате/времени)
     """
 
-    def decorator(func: Callable):
+    def decorator(func: Callable) -> Any:
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             result = func(*args, **kwargs)
 
             if not isinstance(result, pd.DataFrame):
@@ -32,7 +33,7 @@ def save_report(filename: Optional[str] = None):
             # Имя файла
             file_to_s = filename or f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
             file_to_save = os.path.join(
-                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "report")), file_to_s
+                os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "reports")), file_to_s
             )
 
             # Сохраняем в CSV
@@ -53,7 +54,7 @@ def save_report(filename: Optional[str] = None):
 
 
 # ------------------ Функция-отчёт ------------------
-@save_report  # можно также использовать @save_report("my_report.csv")
+@save_report("my_report.csv")
 def spending_by_category(transactions: pd.DataFrame, category: str, date: Optional[str] = None) -> pd.DataFrame:
     """
     Возвращает траты по заданной категории за последние 3 месяца от переданной даты.
