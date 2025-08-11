@@ -33,19 +33,23 @@ import json
 # filt = spending_by_category(data, category="Супермаркеты")
 # print(filt)
 
-transactions = [
-    {
-        "Дата операции": "31.12.2021 16:44:00",
-        "Категория": "Супермаркеты",
-        "Описание": "Колхоз",
-        "Сумма операции": -160.89,
-        # остальные поля...
-    },
-    # другие транзакции...
-]
+# transactions = [
+#     {
+#         "Дата операции": "31.12.2021 16:44:00",
+#         "Категория": "Супермаркеты",
+#         "Описание": "Колхоз",
+#         "Сумма операции": -160.89,
+#         # остальные поля...
+#     },
+#     # другие транзакции...
+# ]
+#
+# query = "Колхоз"
+#
+# json_result = simple_search(query, transactions)
+# result = json.loads(json_result)
+# print(result)
 
-query = "Колхоз"
-
-json_result = simple_search(query, transactions)
-result = json.loads(json_result)
-print(result)
+from views import generate_report
+if __name__ == "__main__":
+    print(generate_report("2021-12-31 16:00:00"))

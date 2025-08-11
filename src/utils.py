@@ -161,7 +161,7 @@ def load_user_settings(settings_path: str) -> dict:
 
 def get_currency_rates(currencies: list) -> list:
     """Функция получения курса валют"""
-    url = "https://api.exchangerate.host/latest?base=RUB"
+    url = "https://open.er-api.com/v6/latest/RUB"
     response = requests.get(url)
     data = response.json()
     result = []
@@ -174,13 +174,15 @@ def get_stock_prices(stocks: list) -> list:
     """Функция получения котировок акций"""
     # Здесь пример с Yahoo Finance API (через yfinance можно улучшить)
     result = []
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     for stock in stocks:
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{stock}"
         try:
-            response = requests.get(url)
+            response = requests.get(url, headers=headers, timeout=5)
+            response.raise_for_status()
             json_data = response.json()
             price = json_data["chart"]["result"][0]["meta"]["regularMarketPrice"]
             result.append({"stock": stock, "price": round(price, 2)})
         except Exception as e:
             logging.error(f"Ошибка получения цены {stock}: {e}")
-    return resul
+    return result

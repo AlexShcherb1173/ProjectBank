@@ -79,6 +79,9 @@
 #
 #     assert mock_logger.info.call_count >= 0  # можно усилить, если добавим логи в utils
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 import json
 import pytest
 from unittest.mock import patch

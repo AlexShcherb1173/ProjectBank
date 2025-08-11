@@ -48,7 +48,7 @@
 #     logger.info("Отчет успешно сгенерирован")
 #     return json.dumps(result, ensure_ascii=False, indent=2)
 
-
+import os
 import json
 from datetime import datetime
 import utils
@@ -62,7 +62,7 @@ def generate_report(date_str: str) -> str:
     greeting = utils.get_greeting(dt)
 
     # Загрузка данных
-    df = utils.load_transactions("transactions.xlsx")
+    df = utils.load_transactions(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')), 'operations.xlsx'))
 
     # Диапазон дат
     start_date = dt.replace(day=1, hour=0, minute=0, second=0)
@@ -76,8 +76,7 @@ def generate_report(date_str: str) -> str:
     top_transactions = utils.get_top_transactions(df_filtered)
 
     # Настройки пользователя
-    settings = utils.load_user_settings("user_settings.json")
-
+    settings = utils.load_user_settings(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')), 'user_settings.json'))
     # Курсы валют
     currency_rates = utils.get_currency_rates(settings["user_currencies"])
 
