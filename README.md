@@ -20,12 +20,14 @@
 | Функция                                                                                 | Описание                                                |
 | --------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | `get_greeting(dt: datetime) -> str`                                                     | Приветствие пользователя в зависимости от времени суток |
-| `filter_transactions(df: pd.DataFrame, start: datetime, end: datetime) -> pd.DataFrame` | Фильтрация транзакций по диапазону дат                  |
-| `summarize_cards(df: pd.DataFrame)`                                                     | Суммирование трат по картам с расчетом кешбэка          |
+| `filter_transactions_by_date(df: pd.DataFrame, start: datetime, end: datetime) -> `     | Фильтрация транзакций по диапазону дат                  |
+| `pd.DataFrame`                                                                          |                                                         |
+| `aggregate_cards(df: pd.DataFrame)`                                                     | Суммирование трат по картам с расчетом кешбэка          |
 | `get_top_transactions(df: pd.DataFrame, top_n=5)`                                       | Отбор топ-транзакций по убыванию суммы                  |
 | `get_currency_rates(currencies)`                                                        | Получение курса валют                                   |
 | `get_stock_prices(stocks)`                                                              | Получение котировок акций                               |
 | `load_user_settings(path="user_settings.json")`                                         | Загрузка пользовательских настроек из файла             |
+| `load_transactions(file_path: str) -> pd.DataFrame:`                                    | Создает DataFrame из xlsx файла                         |
 ```
 #### user_settings.json  
 ##### Файл с пользовательскими настройками:  

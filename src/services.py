@@ -12,9 +12,8 @@
 
 import json
 import logging
-from typing import List, Dict
+from typing import Dict, List
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def simple_search(query: str, transactions: List[Dict]) -> str:
     """
@@ -32,11 +31,14 @@ def simple_search(query: str, transactions: List[Dict]) -> str:
         result = []
     else:
         lower_query = query.lower()
-        result = [
-            tx for tx in transactions
-            if (tx.get("Описание", "").lower().find(lower_query) != -1) or
-               (tx.get("Категория", "").lower().find(lower_query) != -1)
-        ]
+        result = []
+        for tx in transactions:
+            if not isinstance(tx, dict):
+                continue
+            description = str(tx.get("Описание", "")).lower()
+            category = str(tx.get("Категория", "")).lower()
+            if (lower_query in description) or (lower_query in category):
+                result.append(tx)
 
     logging.info(f"Найдено {len(result)} транзакций по запросу '{query}'")
     return json.dumps(result, ensure_ascii=False, indent=4)

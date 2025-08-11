@@ -1,57 +1,17 @@
-# views.py будет содержать главную функцию generate_report(date_str, df)
-# utils.py — набор вспомогательных функций: приветствие, фильтрация по дате, агрегирование по картам,
-# топ-транзакции, запрос валют и акций.
-# user_settings.json — хранит валюты и акции.
-# Будем использовать requests для API валют и акций, pandas для обработки транзакций, logging
-# для отладки, json для сборки ответа.
+# views.py содержит главную функцию generate_report(date_str)
 
-#
-# import json
-# import logging
-# from datetime import datetime
-# from utils import (
-#     get_greeting,
-#     filter_transactions,
-#     summarize_cards,
-#     get_top_transactions,
-#     load_user_settings,
-#     get_currency_rates,
-#     get_stock_prices
-# )
-#
-# logger = logging.getLogger(__name__)
-#
-#
-# def generate_report(date_str: str, df) -> str:
-#     """Генерация итогового отчета за выбранный период."""
-#     logger.info("Начало генерации отчета")
-#
-#     date_obj = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-#     df_filtered = filter_transactions(df, date_obj)
-#
-#     greeting = get_greeting(date_obj)
-#     cards_info = summarize_cards(df_filtered)
-#     top_transactions = get_top_transactions(df_filtered)
-#
-#     settings = load_user_settings()
-#     currency_rates = get_currency_rates(settings["user_currencies"])
-#     stock_prices = get_stock_prices(settings["user_stocks"])
-#
-#     result = {
-#         "greeting": greeting,
-#         "cards": cards_info,
-#         "top_transactions": top_transactions,
-#         "currency_rates": currency_rates,
-#         "stock_prices": stock_prices
-#     }
-#
-#     logger.info("Отчет успешно сгенерирован")
-#     return json.dumps(result, ensure_ascii=False, indent=2)
-
-import os
 import json
+import os
 from datetime import datetime
+
+from dotenv import load_dotenv
+
 import utils
+
+load_dotenv()  # загрузить переменные из .env
+
+USER_SETTINGS_FILE = os.getenv("USER_SETTINGS_FILE")
+TRANSACTIONS_FILE = os.getenv("TRANSACTIONS_FILE")
 
 def generate_report(date_str: str) -> str:
     """Генерация итогового отчета за выбранный период."""
@@ -62,7 +22,9 @@ def generate_report(date_str: str) -> str:
     greeting = utils.get_greeting(dt)
 
     # Загрузка данных
-    df = utils.load_transactions(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')), 'operations.xlsx'))
+    df = utils.load_transactions(
+        os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")), TRANSACTIONS_FILE)
+    )
 
     # Диапазон дат
     start_date = dt.replace(day=1, hour=0, minute=0, second=0)
@@ -76,7 +38,9 @@ def generate_report(date_str: str) -> str:
     top_transactions = utils.get_top_transactions(df_filtered)
 
     # Настройки пользователя
-    settings = utils.load_user_settings(os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'data')), 'user_settings.json'))
+    settings = utils.load_user_settings(
+        os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data")), USER_SETTINGS_FILE)
+    )
     # Курсы валют
     currency_rates = utils.get_currency_rates(settings["user_currencies"])
 
@@ -89,9 +53,7 @@ def generate_report(date_str: str) -> str:
         "cards": cards_info,
         "top_transactions": top_transactions,
         "currency_rates": currency_rates,
-        "stock_prices": stock_prices
+        "stock_prices": stock_prices,
     }
 
     return json.dumps(result, ensure_ascii=False, indent=2)
-
-
