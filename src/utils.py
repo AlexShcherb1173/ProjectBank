@@ -7,10 +7,12 @@
 import json
 import logging
 import os
+import requests
 from datetime import datetime
 from typing import Dict, Any
+from pathlib import Path
 import pandas as pd
-import requests
+
 from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +22,10 @@ load_dotenv()  # загрузить переменные из .env
 CURRENCY_API_BASE_URL = os.getenv("CURRENCY_API_BASE_URL")
 STOCK_API_BASE_URL = os.getenv("STOCK_API_BASE_URL")
 
+if not CURRENCY_API_BASE_URL:
+    logging.warning("CURRENCY_API_BASE_URL is not set (.env)")
+if not STOCK_API_BASE_URL:
+    logging.warning("STOCK_API_BASE_URL is not set (.env)")
 
 def get_greeting(dt: datetime) -> str:
     """Функция - приветствие для пользователя в зависимости от времени суток"""
@@ -34,11 +40,19 @@ def get_greeting(dt: datetime) -> str:
         return "Доброй ночи"
 
 
-def load_transactions(file_path: str) -> pd.DataFrame:
-    """Функция создает DataFrame из xlsx файла"""
-    df = pd.read_excel(file_path)
-    return df
+BASE_DIR = Path(__file__).resolve().parents[1]
 
+def load_transactions(path: str) -> pd.DataFrame:
+    file_path = BASE_DIR / path
+
+    if file_path.suffix == ".xlsx":
+        return pd.read_excel(file_path)
+    elif file_path.suffix == ".csv":
+        return pd.read_csv(file_path)
+    elif file_path.suffix == ".json":
+        return pd.read_json(file_path)
+
+    raise ValueError("Unsupported file format")
 
 def filter_transactions_by_date(df: pd.DataFrame, start_date: datetime, end_date: datetime) -> pd.DataFrame:
     """Функция фильтрации транзакций по датам"""
@@ -84,15 +98,26 @@ def load_user_settings(settings_path: str) -> dict:
         return data
 
 
-def get_currency_rates(currencies: list) -> list:
-    """Функция получения курса валют"""
-    url = f"{CURRENCY_API_BASE_URL}/RUB"
-    response = requests.get(url)
+def get_currency_rates(currencies: list[str], base: str = "RUB") -> list[dict]:
+    """Получение курсов валют относительно base."""
+    if not CURRENCY_API_BASE_URL:
+        raise RuntimeError("CURRENCY_API_BASE_URL is not set in .env")
+
+    # ожидаем, что base url = "https://api.exchangerate.host/latest"
+    response = requests.get(
+        CURRENCY_API_BASE_URL,
+        params={"base": base, "symbols": ",".join(currencies)},
+        timeout=10,
+    )
+    response.raise_for_status()
     data = response.json()
+
+    rates = data.get("rates", {})
     result = []
     for cur in currencies:
-        if cur in data["rates"]:
-            result.append({"currency": cur, "rate": round(1 / data["rates"][cur], 2)})
+        rate = rates.get(cur)
+        if rate is not None:
+            result.append({"currency": cur, "rate": round(rate, 4)})  # 1 RUB -> cur
     return result
 
 
